@@ -15,20 +15,20 @@ def calculate_prob(graph: DiGraph):
             nodes[node]['cumulative'] = 1
 
     while not ready.empty():
-        curr = ready.get()
-        for adj in graph[curr]:
-            temp = nodes[curr]['cumulative'] * graph[curr][adj]['prob']
-            if nodes[adj]['_type'] == 'OR':
-                if nodes[adj]['done'] == 0:
-                    nodes[adj]['cumulative'] = temp
-                    nodes[adj]['fail'] = 1 - temp
+        u = ready.get()
+        for v in graph[u]:
+            temp = nodes[u]['cumulative'] * graph[u][v]['prob']
+            if nodes[v]['_type'] == 'OR':
+                if nodes[v]['done'] == 0:
+                    nodes[v]['cumulative'] = temp
+                    nodes[v]['fail'] = 1 - temp
                 else:
-                    nodes[adj]['cumulative'] = (1 - nodes[adj]['fail'] * (1 - temp))
-                    nodes[adj]['fail'] *= 1 - temp
-            elif nodes[adj]['_type'] == 'AND':
-                nodes[adj]['cumulative'] *= temp
+                    nodes[v]['cumulative'] = (1 - nodes[v]['fail'] * (1 - temp))
+                    nodes[v]['fail'] *= 1 - temp
+            elif nodes[v]['_type'] == 'AND':
+                nodes[v]['cumulative'] *= temp
 
-            nodes[adj]['done'] += 1
-            if nodes[adj]['done'] == graph.in_degree(adj):
-                nodes[adj]['cumulative'] *= nodes[adj]['prob']
-                ready.put(adj)
+            nodes[v]['done'] += 1
+            if nodes[v]['done'] == graph.in_degree(v):
+                nodes[v]['cumulative'] *= nodes[v]['prob']
+                ready.put(v)

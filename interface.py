@@ -5,6 +5,10 @@ from tkinter import filedialog
 
 from utils.csv_reader import *
 from graph.probability import *
+from graph.deletion import *
+
+orig_graph = DiGraph()
+graph_changed = True
 
 
 def command_help():
@@ -12,16 +16,35 @@ def command_help():
     print('\033[4mv\033[0miew [nodes|edges|history] - views the nodes or edges in the graph, or the history. \n'
           'Default to view nodes and edges')
     print('\033[4mc\033[0malculate [u] - calculates the cumulative probability at u. Defaults to the goal node')
-    print('\033[4md\033[0melete <u [v]> - deletes the node u or the edge (u, v). Unreachable nodes will be pruned after')
+    print(
+        '\033[4md\033[0melete <u [v]> - deletes the node u or the edge (u, v). Unreachable nodes will be pruned after')
     print('\033[4mu\033[0mndo [n] - undo n actions. Defaults to 1')
     print('\033[4mr\033[0meset - reset the graph to its original state')
     print('set - configures the program, enter ?set for more info')
     print('\033[4mq\033[0muit - terminates the program')
 
 
-def calculate(graph: DiGraph):
-    calculate_prob(graph)
-    print()
+def calculate(graph: DiGraph, u=None):
+    global graph_changed
+    if graph_changed:
+        calculate_prob(graph)
+        graph_changed = False
+    if u is None:
+        u = graph.graph['goal']
+    print(f'The probability at node {u} is {graph.nodes[u]["cumulative"]}')
+
+
+def delete(graph: DiGraph, u, v=None):
+    global graph_changed
+    n_node, n_edge = delete_element(graph, u, v)
+    if n_node is None:
+        if v is None:
+            logging.error(f'Node {u} does not exist in the graph')
+        else:
+            logging.error(f'Edge ({u}, {v}) does not exist in the graph')
+    else:
+        print(f'Deleted {n_node} nodes and {n_edge} total')
+        graph_changed = True
 
 
 def main_loop(graph: DiGraph):
@@ -34,13 +57,21 @@ def main_loop(graph: DiGraph):
         if cmd[0] == 'v' or cmd[0] == 'view':
             print('Not implemented yet')
         elif cmd[0] == 'c' or cmd[0] == 'calculate':
-            calculate(graph)
+            if len(cmd) > 1:
+                calculate(graph, int(cmd[1]))
+            else:
+                calculate(graph)
         elif cmd[0] == 'd' or cmd[0] == 'delete':
-            pass
+            if len(cmd) == 2:
+                delete(graph, int(cmd[1]))
+            elif len(cmd) == 3:
+                delete(graph, int(cmd[1]), int(cmd[2]))
+            else:
+                logging.error('delete requires a node or an edge as the argument')
         elif cmd[0] == 'u' or cmd[0] == 'undo':
             pass
         elif cmd[0] == 'r' or cmd[0] == 'reset':
-            pass
+            graph = orig_graph.copy()
         elif cmd[0] == 'set':
             pass
         elif cmd[0] == 'q' or cmd[0] == 'quit':
@@ -85,6 +116,8 @@ def start():
         goal = int(input('Please enter the index of the goal node: '))
         graph.graph['goal'] = goal
 
+    global orig_graph
+    orig_graph = graph.copy()
     main_loop(graph)
 
 
