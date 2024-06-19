@@ -8,7 +8,7 @@ from graph.probability import *
 from graph.deletion import *
 
 orig_graph = DiGraph()
-graph_changed = True
+graph_changed = False
 
 
 def command_help():
@@ -31,7 +31,13 @@ def calculate(graph: DiGraph, u=None):
         graph_changed = False
     if u is None:
         u = graph.graph['goal']
-    print(f'The probability at node {u} is {graph.nodes[u]["cumulative"]}')
+    prob = graph.nodes[u]["cumulative"]
+
+    if u == graph.graph['goal']:
+        print(f'The probability at goal node {u} is {prob:.5f}, '
+              f'delta = {prob - graph.graph["orig_prob"]:.5f}')
+    else:
+        print(f'The probability at node {u} is {prob:.5f}')
 
 
 def delete(graph: DiGraph, u, v=None):
@@ -43,7 +49,7 @@ def delete(graph: DiGraph, u, v=None):
         else:
             logging.error(f'Edge ({u}, {v}) does not exist in the graph')
     else:
-        print(f'Deleted {n_node} nodes and {n_edge} total')
+        print(f'Deleted {n_node} nodes and {n_edge} edges total')
         graph_changed = True
 
 
@@ -115,6 +121,9 @@ def start():
     else:
         goal = int(input('Please enter the index of the goal node: '))
         graph.graph['goal'] = goal
+
+    calculate_prob(graph)
+    graph.graph['orig_prob'] = graph.nodes[graph.graph['goal']]['cumulative']
 
     global orig_graph
     orig_graph = graph.copy()

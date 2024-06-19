@@ -27,10 +27,16 @@ def delete_element(graph: DiGraph, u, v=None):
             return None, None
     else:
         if graph.has_edge(u, v):
+            deleted = False
             if check_node(graph, u, 'out'):
                 pending.put(u)
+                deleted = True
             if check_node(graph, v, 'in'):
                 pending.put(v)
+                deleted = True
+            if not deleted:
+                graph.remove_edge(u, v)
+                return 0, 1
         else:
             return None, None
     # Go through all nodes in pending and prune it if
