@@ -77,13 +77,16 @@ def main_loop(graph: DiGraph):
                 calculate(graph, int(cmd[1]))
             else:
                 calculate(graph)
-        elif cmd[0] == 'd' or cmd[0] == 'delete':
+        elif cmd[0] == 'd' or cmd[0] == 'delete' or cmd[0] == 'dc':
             if len(cmd) == 2:
                 delete(graph, int(cmd[1]))
             elif len(cmd) == 3:
                 delete(graph, int(cmd[1]), int(cmd[2]))
             else:
                 logging.error('Delete requires a node or an edge as the argument')
+
+            if cmd[0] == 'dc':
+                calculate(graph)
         elif cmd[0] == 'u' or cmd[0] == 'undo':
             pass
         elif cmd[0] == 'r' or cmd[0] == 'reset':
