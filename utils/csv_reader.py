@@ -22,8 +22,9 @@ def read_graph(path):
             name = line[1]
             _type = line[2]
             prob = float(line[3])
+            cost = float(line[4])
 
-            graph.add_node(idx, name=name, _type=_type, prob=prob)
+            graph.add_node(idx, name=name, _type=_type, prob=prob, cost=cost)
 
             if name == 'g' or name == 'goal':
                 goal = idx
@@ -33,8 +34,9 @@ def read_graph(path):
             src = int(line[1])
             dst = int(line[0])
             prob = float(line[2])
+            cost = float(line[3])
 
-            graph.add_edge(src, dst, prob=prob)
+            graph.add_edge(src, dst, prob=prob, cost=cost)
 
     if goal != -99999:
         graph.graph['goal'] = goal

@@ -6,6 +6,7 @@ from tkinter import filedialog
 from utils.csv_reader import *
 from graph.probability import *
 from graph.deletion import *
+from graph.output import *
 
 orig_graph = DiGraph()
 graph_changed = False
@@ -13,7 +14,7 @@ graph_changed = False
 
 def command_help():
     print('Available commands:')
-    print('\033[4mv\033[0miew [nodes|edges|history] - views the nodes or edges in the graph, or the history. \n'
+    print('\033[4mv\033[0miew [all|nodes|edges|history] - views the nodes or edges in the graph, or the history. \n'
           'Default to view nodes and edges')
     print('\033[4mc\033[0malculate [u] - calculates the cumulative probability at u. Defaults to the goal node')
     print(
@@ -34,8 +35,11 @@ def calculate(graph: DiGraph, u=None):
     prob = graph.nodes[u]["cumulative"]
 
     if u == graph.graph['goal']:
+        total = sum([x[1] for x in graph.nodes.data('cost')])
+        total += sum(x[2] for x in graph.edges.data('cost'))
         print(f'The probability at goal node {u} is {prob:.5f}, '
-              f'delta = {prob - graph.graph["orig_prob"]:.5f}')
+              f'delta = {prob - graph.graph["orig_prob"]:.5f}, '
+              f'cost = {total}')
     else:
         print(f'The probability at node {u} is {prob:.5f}')
 
@@ -61,7 +65,13 @@ def main_loop(graph: DiGraph):
             continue
 
         if cmd[0] == 'v' or cmd[0] == 'view':
-            print('Not implemented yet')
+            if len(cmd) > 1:
+                mode = cmd[1]
+                if mode not in ['all', 'nodes', 'edges']:
+                    logging.error('Invalid argument, you can use view [all|nodes|edges]')
+            else:
+                mode = 'all'
+            print_graph(graph, mode)
         elif cmd[0] == 'c' or cmd[0] == 'calculate':
             if len(cmd) > 1:
                 calculate(graph, int(cmd[1]))
@@ -73,7 +83,7 @@ def main_loop(graph: DiGraph):
             elif len(cmd) == 3:
                 delete(graph, int(cmd[1]), int(cmd[2]))
             else:
-                logging.error('delete requires a node or an edge as the argument')
+                logging.error('Delete requires a node or an edge as the argument')
         elif cmd[0] == 'u' or cmd[0] == 'undo':
             pass
         elif cmd[0] == 'r' or cmd[0] == 'reset':
